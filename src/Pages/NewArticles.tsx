@@ -45,7 +45,6 @@ const PublicationCard = () => {
       formData.append('title', title);
       formData.append('content', content);
       
-      // Only append image if it's a new File object
       if (image instanceof File) {
         formData.append('image', image);
       }

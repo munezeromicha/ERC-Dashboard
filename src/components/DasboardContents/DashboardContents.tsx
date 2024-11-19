@@ -1,10 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import BarChart from "../Chart/BarChart";
 import PieChart from "../Chart/PieChart";
 import Calendar from "../Calendar/Calendar";
 import AppointmentsChart from "../Chart/AppointmentsChart";
+
 const DashboardContent = () => {
+  const [publicationCount, setPublicationCount] = useState<number>(0);
+  const [appointmentCount, setAppointmentCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchPublicationCount = async () => {
+      try {
+        const response = await fetch(
+          "https://wizzy-africa-backend.onrender.com/api/publication-cards"
+        );
+        const data = await response.json();
+        setPublicationCount(data.length);
+      } catch (error) {
+        console.error("Error fetching publication count:", error);
+      }
+    };
+
+    fetchPublicationCount();
+  }, []);
+
+  useEffect(() => {
+    const fetchAppointmentCount = async () => {
+      try {
+        const response = await fetch(
+          "https://wizzy-africa-backend.onrender.com/api/appointments"
+        );
+        const data = await response.json();
+        setAppointmentCount(data.length);
+      } catch (error) {
+        console.error("Error fetching publication count:", error);
+      }
+    };
+
+    fetchAppointmentCount();
+  }, []);
   return (
     <div className="flex-1 p-8 bg-[#FFFFFF]">
       <header className="flex flex-col gap-14">
@@ -25,9 +60,9 @@ const DashboardContent = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-16 mt-6">
         <div className="flex flex-col ">
           <Widget
-            title="Articles"
-            count="1K"
-            trend="2.1%"
+            title="Publications statistics"
+            count={`${publicationCount}`}
+            trend=""
             customContent={undefined}
           />
           <BarChart />
@@ -51,8 +86,7 @@ const DashboardContent = () => {
         <div>
           <Widget
             title="Appointments"
-            count="2K"
-            trend="-2.1%"
+            count={`${appointmentCount}`}
             customContent={undefined}
           />
           <AppointmentsChart />
@@ -69,12 +103,7 @@ interface WidgetProps {
   customContent?: React.ReactNode;
 }
 
-const Widget: React.FC<WidgetProps> = ({
-  title,
-  count,
-  trend,
-  customContent,
-}) => {
+const Widget: React.FC<WidgetProps> = ({ title, count, customContent }) => {
   return (
     <div className="p-4 bg-white text-left">
       <h2 className="text-lg font-semibold">{title}</h2>
@@ -82,8 +111,7 @@ const Widget: React.FC<WidgetProps> = ({
         customContent
       ) : (
         <div className="mt-4">
-          <div className="text-2xl">{count}</div>
-          <div className="text-sm text-green-500">{trend} vs last week</div>
+          <div className="text-2xl font-bold text-blue-900">{count}</div>
         </div>
       )}
     </div>

@@ -1,81 +1,119 @@
-import React from 'react';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import React, { useEffect, useState } from "react";
+import { Line } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-interface Props {}
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const BarChart: React.FC<Props> = () => {
-  const data = {
-    labels: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'],
+interface PublicationData {
+  date: string;
+  count: number;
+}
+
+const PublicationChart: React.FC = () => {
+  const [chartData, setChartData] = useState({
+    labels: [] as string[],
     datasets: [
       {
-        label: 'Last 8 days',
-        data: [12, 19, 3, 5, 2, 3, 12, 14, 5, 7, 9, 11],
-        backgroundColor: '#5A6ACF',
-        borderRadius: 0,
-        barThickness: 8,
-      },
-      {
-        label: 'Last Week',
-        data: [10, 15, 5, 8, 6, 9, 13, 9, 6, 8, 7, 10],
-        backgroundColor: '#D1D5DB',
-        borderRadius: 0,
-        barThickness: 8,
+        label: "Publications Uploaded",
+        data: [] as number[],
+        borderColor: "#4f46e5", 
+        backgroundColor: "rgba(79, 70, 229, 0.2)", 
+        tension: 0.4, 
       },
     ],
-  };
+  });
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-        labels: {
-          color: '#121212',
-        },
+  const [loading, setLoading] = useState(true);
 
-      },
-      tooltip: {
-        enabled: true,
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          color: '#737B8B',
-        },
-      },
-      y: {
-        grid: {
-          borderDash: [5, 5],
-          color: '#ffffff',
-        },
-        ticks: {
-          color: '#ffffff',
-        },
-      },
-    },
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("https://wizzy-africa-backend.onrender.com/api/publication-cards");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const publications: PublicationData[] = await response.json();
+
+        console.log('Fetched publications:', publications);
+        
+        if (!publications || publications.length === 0) {
+          console.warn('No publications data received');
+          setLoading(false);
+          return;
+        }
+
+        const groupedData: Record<string, number> = {};
+        publications.forEach((pub) => {
+          const date = new Date(pub.date).toLocaleDateString();
+          groupedData[date] = (groupedData[date] || 0) + 1;
+        });
+
+
+        console.log('Grouped data:', groupedData);
+
+
+        const labels = Object.keys(groupedData).sort();
+        const data = labels.map((date) => groupedData[date]);
+
+        console.log('Chart data:', { labels, data });
+
+        setChartData((prevData) => ({
+          ...prevData,
+          labels,
+          datasets: [
+            {
+              ...prevData.datasets[0],
+              data,
+            },
+          ],
+        }));
+      } catch (error) {
+        console.error("Error fetching publication data:", error);
+
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log('Current loading state:', loading);
+    console.log('Current chart data:', chartData);
+  }, [loading, chartData]);
 
   return (
-    <div className="w-full h-74">
-      <Bar data={data} options={options} className='-ml-8'/>
+    <div className="p-4 bg-white shadow rounded-lg">
+      <h2 className="text-lg font-semibold text-gray-700 mb-4">Publication Upload Trends</h2>
+      <Line data={chartData} options={{
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: "top",
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: "Date",
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: "Number of Publications",
+            },
+          },
+        },
+      }} />
     </div>
   );
 };
 
-export default BarChart;
+export default PublicationChart;

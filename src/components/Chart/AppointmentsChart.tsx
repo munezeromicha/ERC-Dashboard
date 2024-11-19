@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -21,19 +21,67 @@ ChartJS.register(
   Legend
 );
 
+interface Appointment {
+  _id: string;
+  place: string;
+  vehicle: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
+  additionalInfo: string;
+  __v: number;
+}
 const AppointmentsChart: React.FC = () => {
-  const data = {
-    labels: ['01', '02', '03', '04', '05', '06'],
-    datasets: [
-      {
-        label: 'Last 6 days',
-        data: [1, 3, 0, 2, 1, 4], 
-        fill: false,
-        borderColor: '#4F46E5', 
-        tension: 0.4,
-      },
-    ],
-  };
+  const [chartData, setChartData] = useState<{
+    labels: string[];
+    datasets: {
+      label: string;
+      data: number[];
+      fill: boolean;
+      borderColor: string;
+      tension: number;
+    }[];
+  }>({
+    labels: [],
+    datasets: [],
+  });
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch('https://wizzy-africa-backend.onrender.com/api/appointments');
+        const appointments: Appointment[] = await response.json();
+
+        const appointmentsByDate = appointments.reduce((acc: { [key: string]: number }, appointment) => {
+          const date = new Date(parseInt(appointment._id.substring(0, 8), 16) * 1000);
+          const dateStr = date.toLocaleDateString();
+          
+          acc[dateStr] = (acc[dateStr] || 0) + 1;
+          return acc;
+        }, {});
+
+        const dates = Object.keys(appointmentsByDate).sort().slice(-6);
+        const counts = dates.map(date => appointmentsByDate[date]);
+
+        setChartData({
+          labels: dates,
+          datasets: [
+            {
+              label: 'Appointments per day',
+              data: counts,
+              fill: false,
+              borderColor: '#4F46E5',
+              tension: 0.4,
+            },
+          ],
+        });
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
 
   const options = {
     responsive: true,
@@ -59,7 +107,7 @@ const AppointmentsChart: React.FC = () => {
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      <Line data={data} options={options} className='-ml-8'/>
+      <Line data={chartData} options={options} className='-ml-8'/>
     </div>
   );
 };
