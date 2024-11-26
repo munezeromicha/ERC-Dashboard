@@ -12,21 +12,92 @@ import Settings from "./Pages/Settings";
 import Help from "./Pages/Help";
 import NewCard from "./Pages/NewCard";
 import ExpertCard from "./Pages/ExpertCard";
+import PrivateRoute from "./Pages/PrivateRoute";
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />} />
-        <Route index element={<Dashboard />} />
-        <Route path="articles" element={<Articles />} />
-        <Route path="expertCard" element={<ExpertCard />} />
-        <Route path="newArticles/:id?" element={<NewArticles />} />
-        <Route path="newCard" element={<NewCard />} />
-        <Route path="queries" element={<Queries />} />
-        <Route path="appointments" element={<Appointments />} />
-        <Route path="account" element={<Account />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="help" element={<Help />} />
+        <Route
+          index
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="articles"
+          element={
+            <PrivateRoute>
+              <Articles />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="expertCard"
+          element={
+            <PrivateRoute>
+              <ExpertCard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="newArticles/:id?"
+          element={
+            <PrivateRoute>
+              <NewArticles />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="newCard"
+          element={
+            <PrivateRoute>
+              <NewCard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="queries"
+          element={
+            <PrivateRoute>
+              <Queries />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="appointments"
+          element={
+            <PrivateRoute>
+              <Appointments />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="account"
+          element={
+            <PrivateRoute>
+              <Account />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <PrivateRoute>
+              <Settings />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="help"
+          element={
+            <PrivateRoute>
+              <Help />
+            </PrivateRoute>
+          }
+        />
         <Route path="*" element={<NoPage />} />
       </Routes>
     </BrowserRouter>

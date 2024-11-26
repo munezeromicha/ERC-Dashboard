@@ -4,59 +4,83 @@ import BarChart from "../Chart/BarChart";
 import PieChart from "../Chart/PieChart";
 import Calendar from "../Calendar/Calendar";
 import AppointmentsChart from "../Chart/AppointmentsChart";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import axios from "axios";
 
 const DashboardContent = () => {
   const [publicationCount, setPublicationCount] = useState<number>(0);
   const [appointmentCount, setAppointmentCount] = useState<number>(0);
   const [queriesCount, setQueriesCount] = useState<number>(0);
+  const navigate = useNavigate();
+
+  const axiosInstance = axios.create({
+    baseURL: 'https://wizzy-africa-backend.onrender.com/api',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+
+  const handleUnauthorized = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+    toast.error("Session expired. Please login again.");
+  };
 
   useEffect(() => {
     const fetchPublicationCount = async () => {
       try {
-        const response = await fetch(
-          "https://wizzy-africa-backend.onrender.com/api/publication-cards"
-        );
-        const data = await response.json();
-        setPublicationCount(data.length);
-      } catch (error) {
+        const response = await axiosInstance.get("/publication-cards");
+        setPublicationCount(response.data.length);
+      } catch (error: any) {
         console.error("Error fetching publication count:", error);
+        if (error.response?.status === 401) {
+          handleUnauthorized();
+        } else {
+          toast.error("Failed to fetch publications");
+        }
       }
     };
 
-    fetchPublicationCount();
-  }, []);
-
-  useEffect(() => {
     const fetchAppointmentCount = async () => {
       try {
-        const response = await fetch(
-          "https://wizzy-africa-backend.onrender.com/api/appointments"
-        );
-        const data = await response.json();
-        setAppointmentCount(data.length);
-      } catch (error) {
-        console.error("Error fetching publication count:", error);
+        const response = await axiosInstance.get("/appointments");
+        setAppointmentCount(response.data.length);
+      } catch (error: any) {
+        console.error("Error fetching appointment count:", error);
+        if (error.response?.status === 401) {
+          handleUnauthorized();
+        } else {
+          toast.error("Failed to fetch appointments");
+        }
       }
     };
 
-    fetchAppointmentCount();
-  }, []);
-
-  useEffect(() => {
     const fetchQueriesCount = async () => {
       try {
-        const response = await fetch(
-          "https://wizzy-africa-backend.onrender.com/api/queries"
-        );
-        const data = await response.json();
-        setQueriesCount(data.count);
-      } catch (error) {
-        console.error("Error fetching publication count:", error);
+        const response = await axiosInstance.get("/queries");
+        setQueriesCount(response.data.count);
+      } catch (error: any) {
+        console.error("Error fetching queries count:", error);
+        if (error.response?.status === 401) {
+          handleUnauthorized();
+        } else {
+          toast.error("Failed to fetch queries");
+        }
       }
     };
 
-    fetchQueriesCount();
-  }, []);
+    // Fetch all data
+    const fetchAllData = async () => {
+      await Promise.all([
+        fetchPublicationCount(),
+        fetchAppointmentCount(),
+        fetchQueriesCount()
+      ]);
+    };
+
+    fetchAllData();
+  }, [navigate]);
 
   return (
     <div className="flex-1 p-8 bg-[#FFFFFF]">
@@ -76,7 +100,7 @@ const DashboardContent = () => {
         </h1>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-16 mt-6">
-        <div className="flex flex-col ">
+        <div className="flex flex-col">
           <Widget
             title="Publications statistics"
             count={`${publicationCount}`}
