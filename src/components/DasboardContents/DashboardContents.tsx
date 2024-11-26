@@ -8,6 +8,7 @@ import AppointmentsChart from "../Chart/AppointmentsChart";
 const DashboardContent = () => {
   const [publicationCount, setPublicationCount] = useState<number>(0);
   const [appointmentCount, setAppointmentCount] = useState<number>(0);
+  const [queriesCount, setQueriesCount] = useState<number>(0);
 
   useEffect(() => {
     const fetchPublicationCount = async () => {
@@ -40,6 +41,23 @@ const DashboardContent = () => {
 
     fetchAppointmentCount();
   }, []);
+
+  useEffect(() => {
+    const fetchQueriesCount = async () => {
+      try {
+        const response = await fetch(
+          "https://wizzy-africa-backend.onrender.com/api/queries"
+        );
+        const data = await response.json();
+        setQueriesCount(data.count);
+      } catch (error) {
+        console.error("Error fetching publication count:", error);
+      }
+    };
+
+    fetchQueriesCount();
+  }, []);
+
   return (
     <div className="flex-1 p-8 bg-[#FFFFFF]">
       <header className="flex flex-col gap-14">
@@ -70,8 +88,7 @@ const DashboardContent = () => {
         <div>
           <Widget
             title="Queries"
-            count="2K"
-            trend="-2.1%"
+            count={`${queriesCount}`}
             customContent={undefined}
           />
           <PieChart />

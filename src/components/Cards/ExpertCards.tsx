@@ -9,11 +9,13 @@ interface Card {
 function ExpertCards({ 
   cards, 
   onDelete, 
-  onReadMore 
+  onReadMore, 
+  loading = false
 }: { 
   cards: Card[];
   onDelete: (id: string) => void;
   onReadMore: (card: Card) => void;
+  loading?: boolean;
 }) {
   const navigate = useNavigate();
   
@@ -22,6 +24,30 @@ function ExpertCards({
     const plainText = stripHtmlTags(content);
     return plainText.length > 150 ? plainText.substring(0, 150) + "..." : plainText;
   };
+
+  if (loading) {
+    return (
+      <>
+        {[1, 2, 3].map((index) => (
+          <div key={index} className="border rounded-lg p-4 shadow-sm animate-pulse">
+            <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+
+            <div className="space-y-2 mb-4">
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
+            
+            <div className="flex gap-2">
+              <div className="h-8 w-24 bg-gray-200 rounded"></div>
+              <div className="h-8 w-24 bg-gray-200 rounded"></div>
+              <div className="h-8 w-24 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
 
   return (
     <>
@@ -53,7 +79,6 @@ function ExpertCards({
           </div>
         </div>
       ))}
-      
     </>
   );
 }

@@ -3,8 +3,8 @@ import Layout from "./Layout";
 import { toast, Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css'
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 function NewCard() {
   const { state } = useLocation();
@@ -18,21 +18,26 @@ function NewCard() {
 
   const modules = {
     toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link'],
-      ['clean']
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ color: [] }, { background: [] }],
+      ["link"],
+      ["clean"],
     ],
   };
 
   const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'color', 'background',
-    'link'
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "color",
+    "background",
+    "link",
   ];
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +65,6 @@ function NewCard() {
         );
         toast.success("Card updated successfully!");
       } else {
-
         await axios.post("http://localhost:5000/api/expertise-cards", {
           title: title.trim(),
           content: content.trim(),
