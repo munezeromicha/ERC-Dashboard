@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import BarChart from "../Chart/BarChart";
 import PieChart from "../Chart/PieChart";
@@ -12,75 +12,97 @@ const DashboardContent = () => {
   const [publicationCount, setPublicationCount] = useState<number>(0);
   const [appointmentCount, setAppointmentCount] = useState<number>(0);
   const [queriesCount, setQueriesCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const axiosInstance = axios.create({
-    baseURL: 'https://wizzy-africa-backend.onrender.com/api',
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+
+  const token = useMemo(() => localStorage.getItem('token'), []);
+
+
+  const axiosInstance = useMemo(() => {
+    console.log('Creating axios instance with token:', token); 
+    return axios.create({
+      baseURL: 'https://wizzy-africa-backend.onrender.com/api',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  }, [token]);
+
+
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        handleUnauthorized();
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
-  });
+  );
 
   const handleUnauthorized = () => {
+    console.log('Handling unauthorized access'); 
     localStorage.removeItem('token');
     navigate('/login');
     toast.error("Session expired. Please login again.");
   };
 
   useEffect(() => {
-    const fetchPublicationCount = async () => {
+    const fetchData = async () => {
+      console.log('Starting data fetch with token:', token); 
+
+      if (!token) {
+        console.log('No token found in fetchData'); 
+        handleUnauthorized();
+        return;
+      }
+
+      setLoading(true);
+
       try {
-        const response = await axiosInstance.get("/publication-cards");
-        setPublicationCount(response.data.length);
+        const [publicationsRes, appointmentsRes, queriesRes] = await Promise.all([
+          axiosInstance.get("/publication-cards"),
+          axiosInstance.get("/appointments"),
+          axiosInstance.get("/queries")
+        ]);
+
+        console.log('API Responses:', { 
+          publications: publicationsRes.data,
+          appointments: appointmentsRes.data,
+          queries: queriesRes.data
+        });
+
+        setPublicationCount(publicationsRes.data.length);
+        setAppointmentCount(appointmentsRes.data.length);
+        setQueriesCount(queriesRes.data.length);
       } catch (error: any) {
-        console.error("Error fetching publication count:", error);
+        console.error('Error details:', error.response || error); 
         if (error.response?.status === 401) {
           handleUnauthorized();
         } else {
-          toast.error("Failed to fetch publications");
+          toast.error("Failed to fetch data");
         }
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchAppointmentCount = async () => {
-      try {
-        const response = await axiosInstance.get("/appointments");
-        setAppointmentCount(response.data.length);
-      } catch (error: any) {
-        console.error("Error fetching appointment count:", error);
-        if (error.response?.status === 401) {
-          handleUnauthorized();
-        } else {
-          toast.error("Failed to fetch appointments");
-        }
-      }
-    };
+    fetchData();
+  }, [token, axiosInstance, navigate]);
 
-    const fetchQueriesCount = async () => {
-      try {
-        const response = await axiosInstance.get("/queries");
-        setQueriesCount(response.data.count);
-      } catch (error: any) {
-        console.error("Error fetching queries count:", error);
-        if (error.response?.status === 401) {
-          handleUnauthorized();
-        } else {
-          toast.error("Failed to fetch queries");
-        }
-      }
-    };
-
-    // Fetch all data
-    const fetchAllData = async () => {
-      await Promise.all([
-        fetchPublicationCount(),
-        fetchAppointmentCount(),
-        fetchQueriesCount()
-      ]);
-    };
-
-    fetchAllData();
-  }, [navigate]);
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg">Loading dashboard data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-8 bg-[#FFFFFF]">
