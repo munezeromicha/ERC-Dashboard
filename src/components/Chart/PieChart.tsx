@@ -6,8 +6,11 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  TooltipItem,
 } from 'chart.js';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -19,22 +22,54 @@ interface QueryData {
 const PieChart: React.FC = () => {
   const [totalQueries, setTotalQueries] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://wizzy-africa-backend.onrender.com/api/queries');
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          toast.error('Please login to view query statistics');
+          window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+          return;
+        }
+
+        const response = await axios.get(
+          'https://wizzy-africa-backend.onrender.com/api/queries',
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.status === 401) {
+          toast.error('Session expired. Please login again');
+          localStorage.removeItem('token');
+          window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+          return;
+        }
+
         const queries: QueryData[] = response.data.data;
         setTotalQueries(queries.length);
-        setLoading(false);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching data:', error);
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          toast.error('Session expired. Please login again');
+          localStorage.removeItem('token');
+          window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+        } else {
+          toast.error('Failed to load query statistics');
+        }
+      } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
   const data = {
     labels: ['All'],
@@ -54,7 +89,7 @@ const PieChart: React.FC = () => {
     plugins: {
       tooltip: {
         callbacks: {
-          label: function (tooltipItem: any) {
+          label: function (tooltipItem: TooltipItem<'doughnut'>) {
             return `${tooltipItem.label}: ${tooltipItem.raw} queries`;
           },
         },

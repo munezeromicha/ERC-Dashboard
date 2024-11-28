@@ -13,7 +13,26 @@ import Help from "./Pages/Help";
 import NewCard from "./Pages/NewCard";
 import ExpertCard from "./Pages/ExpertCard";
 import PrivateRoute from "./Pages/PrivateRoute";
+import { useEffect } from "react";
 function App() {
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const token =
+        localStorage.getItem("token") ||
+        document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("token="))
+          ?.split("=")[1];
+      if (!token) {
+        window.location.href = "/login";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
   return (
     <BrowserRouter>
       <Routes>

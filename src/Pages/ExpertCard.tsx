@@ -20,10 +20,10 @@ function ExpertCard() {
   const navigate = useNavigate();
 
   const axiosInstance = axios.create({
-    baseURL: 'https://wizzy-africa-backend.onrender.com/api',
+    baseURL: "https://wizzy-africa-backend.onrender.com/api",
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
-    }
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
   });
 
   useEffect(() => {
@@ -32,11 +32,11 @@ function ExpertCard() {
       try {
         const response = await axiosInstance.get("/expertise-cards");
         setCards(response.data);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(error);
-        if (error.response?.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          localStorage.removeItem("token");
+          window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
           toast.error("Session expired. Please login again.");
         } else {
           toast.error("Failed to fetch cards");
@@ -45,7 +45,7 @@ function ExpertCard() {
         setLoading(false);
       }
     };
-    
+
     fetchCards();
   }, [navigate]);
 
@@ -54,11 +54,11 @@ function ExpertCard() {
       await axiosInstance.delete(`/expertise-cards/${id}`);
       setCards(cards.filter((card: { _id: string }) => card._id !== id));
       toast.success("Card deleted successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        localStorage.removeItem("token");
+        window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
         toast.error("Session expired. Please login again.");
       } else {
         toast.error("Failed to delete card");

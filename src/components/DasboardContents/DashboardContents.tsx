@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { IoSearch } from "react-icons/io5";
 import BarChart from "../Chart/BarChart";
 import PieChart from "../Chart/PieChart";
 import Calendar from "../Calendar/Calendar";
@@ -7,6 +6,8 @@ import AppointmentsChart from "../Chart/AppointmentsChart";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { getAuthToken } from "../../utils/auth";
+import { MoonLoader } from "react-spinners";
 
 const DashboardContent = () => {
   const [publicationCount, setPublicationCount] = useState<number>(0);
@@ -15,27 +16,24 @@ const DashboardContent = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-
-  const token = useMemo(() => localStorage.getItem('token'), []);
-
+  const token = useMemo(() => getAuthToken(), []);
 
   const axiosInstance = useMemo(() => {
-    console.log('Creating axios instance with token:', token); 
+    console.log("Creating axios instance with token:", token);
     return axios.create({
-      baseURL: 'https://wizzy-africa-backend.onrender.com/api',
+      baseURL: "https://wizzy-africa-backend.onrender.com/api",
       headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     });
   }, [token]);
 
-
   axiosInstance.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      const currentToken = getAuthToken();
+      if (currentToken) {
+        config.headers.Authorization = `Bearer ${currentToken}`;
       } else {
         handleUnauthorized();
       }
@@ -47,18 +45,20 @@ const DashboardContent = () => {
   );
 
   const handleUnauthorized = () => {
-    console.log('Handling unauthorized access'); 
-    localStorage.removeItem('token');
-    navigate('/login');
-    toast.error("Session expired. Please login again.");
+    console.log("Handling unauthorized access");
+    import("js-cookie").then((Cookies) => {
+      Cookies.default.remove("auth_token", { path: "/" });
+      window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+      toast.error("Session expired. Please login again.");
+    });
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log('Starting data fetch with token:', token); 
+      console.log("Starting data fetch with token:", token);
 
       if (!token) {
-        console.log('No token found in fetchData'); 
+        console.log("No token found in fetchData");
         handleUnauthorized();
         return;
       }
@@ -66,24 +66,20 @@ const DashboardContent = () => {
       setLoading(true);
 
       try {
-        const [publicationsRes, appointmentsRes, queriesRes] = await Promise.all([
-          axiosInstance.get("/publication-cards"),
-          axiosInstance.get("/appointments"),
-          axiosInstance.get("/queries")
-        ]);
-
-        console.log('API Responses:', { 
-          publications: publicationsRes.data,
-          appointments: appointmentsRes.data,
-          queries: queriesRes.data
-        });
+        const [publicationsRes, appointmentsRes, queriesRes] =
+          await Promise.all([
+            axiosInstance.get("/publication-cards"),
+            axiosInstance.get("/appointments"),
+            axiosInstance.get("/queries"),
+          ]);
 
         setPublicationCount(publicationsRes.data.length);
         setAppointmentCount(appointmentsRes.data.length);
-        setQueriesCount(queriesRes.data.length);
-      } catch (error: any) {
-        console.error('Error details:', error.response || error); 
-        if (error.response?.status === 401) {
+        setQueriesCount(queriesRes.data.count);
+      } catch (error: unknown) {
+        const axiosError = error as { response?: { status: number } };
+        console.error("Error details:", axiosError.response || error);
+        if (axiosError.response?.status === 401) {
           handleUnauthorized();
         } else {
           toast.error("Failed to fetch data");
@@ -98,61 +94,65 @@ const DashboardContent = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-lg">Loading dashboard data...</div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <MoonLoader color="#1F384C" size={50} />
+          <span className="text-gray-500 text-sm mt-4">Loading dashboard...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-8 bg-[#FFFFFF]">
-      <header className="flex flex-col gap-14">
-        <div className="relative w-[60%] flex justify-between">
-          <input
-            type="text"
-            placeholder="Search"
-            className="bg-[#f7f6fb] px-10 py-2 rounded-lg w-full text-[#627B87]"
-          />
-          <button aria-label="Search">
-            <IoSearch className="absolute right-3 top-3 text-gray-500 text-[#627B87]" />
-          </button>
-        </div>
-        <h1 className="text-2xl font-bold text-[#1F384C] text-left">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+      <header className="mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1F384C] text-center sm:text-left">
           Dashboard
         </h1>
       </header>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-16 mt-6">
-        <div className="flex flex-col">
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+        <div className="flex flex-col space-y-4">
           <Widget
             title="Publications statistics"
             count={`${publicationCount}`}
             trend=""
             customContent={undefined}
           />
-          <BarChart />
+          <div className="bg-white rounded-lg shadow-sm p-4 h-[300px]">
+            <BarChart />
+          </div>
         </div>
-        <div>
+
+        <div className="flex flex-col space-y-4">
           <Widget
             title="Queries"
             count={`${queriesCount}`}
             customContent={undefined}
           />
-          <PieChart />
+          <div className="bg-white rounded-lg shadow-sm p-4 h-[300px]">
+            <PieChart />
+          </div>
         </div>
 
-        <Widget
-          title="Calendar"
-          customContent={<Calendar />}
-          count={undefined}
-          trend={undefined}
-        />
-        <div>
+        <div className="flex flex-col space-y-4">
+          <Widget
+            title="Calendar"
+            customContent={<Calendar />}
+            count={undefined}
+            trend={undefined}
+          />
+        </div>
+
+        <div className="flex flex-col space-y-4">
           <Widget
             title="Appointments"
             count={`${appointmentCount}`}
             customContent={undefined}
           />
-          <AppointmentsChart />
+          <div className="bg-white rounded-lg shadow-sm p-4 h-[300px]">
+            <AppointmentsChart />
+          </div>
         </div>
       </div>
     </div>
@@ -168,13 +168,17 @@ interface WidgetProps {
 
 const Widget: React.FC<WidgetProps> = ({ title, count, customContent }) => {
   return (
-    <div className="p-4 bg-white text-left">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-semibold text-[#1F384C]">
+        {title}
+      </h2>
       {customContent ? (
         customContent
       ) : (
         <div className="mt-4">
-          <div className="text-2xl font-bold text-blue-900">{count}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-blue-900">
+            {count}
+          </div>
         </div>
       )}
     </div>

@@ -7,8 +7,8 @@ import Profile from "../assets/Icons/Profile.svg";
 import articles from "../assets/Icons/ooui_articles-ltr.svg";
 import InfoSquare from "../assets/Icons/InfoSquare.svg";
 import Chart from "../assets/Icons/Chart.svg";
-
 const Sidebar = () => {
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F1F2F7] pl-2 w-60">
       <div className="flex-grow">

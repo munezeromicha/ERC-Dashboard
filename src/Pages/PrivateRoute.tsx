@@ -1,23 +1,18 @@
-import { Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { getAuthToken, isAuthenticated } from '../utils/auth';
+import { useNavigate } from 'react-router-dom';
 
-interface PrivateRouteProps {
-  children: React.ReactNode;
-}
-
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
-  const token = localStorage.getItem('token');
+const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Token in PrivateRoute:', token); 
-  }, [token]);
-
-  if (!token) {
-    console.log('No token found, redirecting to login');
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
+    const token = getAuthToken();
+    
+    if (!token) {
+      window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+    }
+  }, [navigate]);
+  return isAuthenticated() ? children : null;
 };
 
 export default PrivateRoute;

@@ -76,80 +76,115 @@ const PublicationCard = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen">
-      <Layout />
-      <Toaster position="top-right" />
-      <div className="flex flex-col pb-4 md:p-6 lg:p-10 w-full max-w-7xl mx-auto">
-        <div className="mb-4 w-full pb-6">
-          <label htmlFor="card-title" className="block text-sm md:text-base font-medium text-gray-700 mb-1">Title</label>
-          <input
-            id="card-title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Enter title..."
-            className="w-full p-2 md:p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
-          />
-          <span className={`text-xs ${title.length === MAX_TITLE_LENGTH ? "text-red-500" : "text-gray-500"}`}>
-            {title.length}/{MAX_TITLE_LENGTH}
-          </span>
-        </div>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
+      <div className="lg:sticky lg:top-0 lg:h-screen">
+        <Layout />
+      </div>
+      
+      <div className="flex-1 w-full">
+        <Toaster position="top-right" />
+        
+        <div className="px-4 py-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
+              {cardData ? 'Edit Publication' : 'New Publication'}
+            </h1>
+          </div>
 
-    <div className="max-w-md pb-10">
-      <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-        Featured Image
-      </label>
-      <input
-        type="file"
-        id="image"
-        accept="image/jpeg,image/jpg,image/png"
-        onChange={handleImageChange}
-        className="hidden"
-      />
-      <label
-        htmlFor="image"
-        className="px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50"
-      >
-        Choose Image
-      </label>
-      {image && (
-        <div className="mt-2">
-          {typeof image === 'string' ? (
-            <div>
-              <img
-                src={image}
-                alt="Current"
-                className="w-32 h-32 object-cover rounded"
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+            <div className="space-y-1">
+              <label htmlFor="card-title" className="block text-sm font-medium text-gray-700">
+                Title
+              </label>
+              <input
+                id="card-title"
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter title..."
+                className="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                maxLength={MAX_TITLE_LENGTH}
               />
-              <span className="text-sm text-gray-500">Current Image</span>
+              <p className={`text-xs ${title.length === MAX_TITLE_LENGTH ? "text-red-500" : "text-gray-500"}`}>
+                {title.length}/{MAX_TITLE_LENGTH}
+              </p>
             </div>
-          ) : (
-            <div>
-              <img
-                src={URL.createObjectURL(image)}
-                alt="Selected"
-                className="w-32 h-32 object-cover rounded"
+
+            <div className="space-y-1">
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+                Featured Image
+              </label>
+              <div className="mt-1 flex flex-wrap items-center gap-4">
+                <input
+                  type="file"
+                  id="image"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="image"
+                  className="px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 inline-flex items-center text-sm font-medium text-gray-700"
+                >
+                  Choose Image
+                </label>
+                {image && (
+                  <div className="relative">
+                    <img
+                      src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                      alt="Preview"
+                      className="h-20 w-20 object-cover rounded-md"
+                    />
+                    <button
+                      onClick={() => setImage(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="card-content" className="block text-sm font-medium text-gray-700">
+                Content
+              </label>
+              <div className="h-[300px] sm:h-[400px] lg:h-[500px]">
+                <ReactQuill
+                  value={content}
+                  onChange={setContent}
+                  className="h-[250px] sm:h-[350px] lg:h-[450px]"
+                  theme="snow"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="reference-link" className="block text-sm font-medium text-gray-700">
+                Reference Link
+              </label>
+              <input
+                type="url"
+                id="reference-link"
+                placeholder="https://example.com"
+                className="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />
-              <span className="text-sm text-gray-500">New Image: {image.name}</span>
             </div>
-          )}
-        </div>
-      )}
-    </div>
 
-        <div className="mb-4 w-full">
-          <label htmlFor="card-content" className="block text-sm md:text-base font-medium text-gray-700 mb-1">Content</label>
-          <ReactQuill value={content} onChange={setContent} className="h-60 mb-4" theme="snow" />
-        </div>
-
-        <div className="mt-6 md:mt-8">
-          <button
-            onClick={handleSubmit}
-            className={`w-full md:w-auto px-6 py-3 ${isLoading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"} text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
-            disabled={isLoading}
-          >
-            {isLoading ? `${cardData ? 'Updating' : 'Creating'} Card...` : `${cardData ? 'Update' : 'Create'} Card`}
-          </button>
+            <div className="pt-4">
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 
+                  `${cardData ? 'Updating' : 'Creating'} Publication...` : 
+                  `${cardData ? 'Update' : 'Create'} Publication`
+                }
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
