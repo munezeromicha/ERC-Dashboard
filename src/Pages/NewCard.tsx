@@ -5,6 +5,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import Cookies from "js-cookie";
 
 function NewCard() {
   const { state } = useLocation();
@@ -55,29 +56,57 @@ function NewCard() {
 
     try {
       setIsLoading(true);
+
+      const token = localStorage.getItem("token") || Cookies.get("token");
+
+      if (!token) {
+        toast.error("You must be logged in to create a card");
+        navigate("/login");
+        return;
+      }
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
       if (editingCard) {
         await axios.put(
           `https://wizzy-africa-backend.onrender.com/api/expertise-cards/${editingCard._id}`,
           {
             title: title.trim(),
             content: content.trim(),
-          }
+          },
+          config
         );
         toast.success("Card updated successfully!");
       } else {
-        await axios.post("http://localhost:5000/api/expertise-cards", {
-          title: title.trim(),
-          content: content.trim(),
-        });
+        await axios.post(
+          "http://localhost:5000/api/expertise-cards",
+          {
+            title: title.trim(),
+            content: content.trim(),
+          },
+          config
+        );
         toast.success("Card created successfully!");
       }
 
       navigate("/expertCard");
     } catch (error) {
       console.error("Operation failed:", error);
-      toast.error(
-        `Failed to ${editingCard ? "update" : "create"} card. Please try again.`
-      );
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        navigate("/login");
+      } else {
+        toast.error(
+          `Failed to ${
+            editingCard ? "update" : "create"
+          } card. Please try again.`
+        );
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Toaster, toast } from 'react-hot-toast';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import Layout from '../Pages/Layout';
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Toaster, toast } from "react-hot-toast";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import Layout from "../Pages/Layout";
+import Cookies from "js-cookie";
+
 const MAX_TITLE_LENGTH = 50;
 
 const PublicationCard = () => {
@@ -11,9 +13,9 @@ const PublicationCard = () => {
   const navigate = useNavigate();
   const cardData = location.state?.cardData;
 
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -41,35 +43,48 @@ const PublicationCard = () => {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      
-      if (image instanceof File) {
-        formData.append('image', image);
+      const token = localStorage.getItem("token") || Cookies.get("token");
+
+      if (!token) {
+        toast.error("You must be logged in to create a publication");
+        return;
       }
 
-      const url = cardData
-        ? `https://wizzy-africa-backend.onrender.com/api/publication-cards/${cardData._id}`
-        : 'https://wizzy-africa-backend.onrender.com/api/publication-cards';
-      
-      const method = cardData ? 'PUT' : 'POST';
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", content);
 
-      const response = await fetch(url, {
-        method,
-        body: formData,
-      });
+      if (image instanceof File) {
+        formData.append("image", image);
+      }
+
+      console.log("FormData contents:");
+      for (const pair of formData.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+
+      const response = await fetch(
+        "https://wizzy-africa-backend.onrender.com/api/publication-cards",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${cardData ? 'update' : 'create'} publication card`);
+        throw new Error(`Failed to create publication (${response.status})`);
       }
 
-      toast.success(`Publication card ${cardData ? 'updated' : 'created'} successfully!`);
-      navigate('/articles'); 
+      toast.success("Publication created successfully!");
+      navigate("/articles");
     } catch (error) {
-      console.error('Error:', error);
-      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred');
+      console.error("Error details:", error);
+      toast.error(
+        error instanceof Error ? error.message : "An unexpected error occurred"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -80,20 +95,23 @@ const PublicationCard = () => {
       <div className="lg:sticky lg:top-0 lg:h-screen">
         <Layout />
       </div>
-      
+
       <div className="flex-1 w-full">
         <Toaster position="top-right" />
-        
+
         <div className="px-4 py-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="mb-4 sm:mb-6">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
-              {cardData ? 'Edit Publication' : 'New Publication'}
+              {cardData ? "Edit Publication" : "New Publication"}
             </h1>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
             <div className="space-y-1">
-              <label htmlFor="card-title" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="card-title"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Title
               </label>
               <input
@@ -105,13 +123,22 @@ const PublicationCard = () => {
                 className="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                 maxLength={MAX_TITLE_LENGTH}
               />
-              <p className={`text-xs ${title.length === MAX_TITLE_LENGTH ? "text-red-500" : "text-gray-500"}`}>
+              <p
+                className={`text-xs ${
+                  title.length === MAX_TITLE_LENGTH
+                    ? "text-red-500"
+                    : "text-gray-500"
+                }`}
+              >
                 {title.length}/{MAX_TITLE_LENGTH}
               </p>
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Featured Image
               </label>
               <div className="mt-1 flex flex-wrap items-center gap-4">
@@ -131,7 +158,11 @@ const PublicationCard = () => {
                 {image && (
                   <div className="relative">
                     <img
-                      src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                      src={
+                        typeof image === "string"
+                          ? image
+                          : URL.createObjectURL(image)
+                      }
                       alt="Preview"
                       className="h-20 w-20 object-cover rounded-md"
                     />
@@ -139,7 +170,7 @@ const PublicationCard = () => {
                       onClick={() => setImage(null)}
                       className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                     >
-                      ×
+                      close
                     </button>
                   </div>
                 )}
@@ -147,7 +178,10 @@ const PublicationCard = () => {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="card-content" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="card-content"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Content
               </label>
               <div className="h-[300px] sm:h-[400px] lg:h-[500px]">
@@ -161,7 +195,10 @@ const PublicationCard = () => {
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="reference-link" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="reference-link"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Reference Link
               </label>
               <input
@@ -178,10 +215,9 @@ const PublicationCard = () => {
                 disabled={isLoading}
                 className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 
-                  `${cardData ? 'Updating' : 'Creating'} Publication...` : 
-                  `${cardData ? 'Update' : 'Create'} Publication`
-                }
+                {isLoading
+                  ? `${cardData ? "Updating" : "Creating"} Publication...`
+                  : `${cardData ? "Update" : "Create"} Publication`}
               </button>
             </div>
           </div>

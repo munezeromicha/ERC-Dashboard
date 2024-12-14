@@ -16,32 +16,35 @@ const Sidebar = () => {
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("token") || Cookies.get("token");
-  
+
       if (!token) {
         toast.error("No active session found");
-        window.location.href = "https://erc-remys-projects-e871eb29.vercel.app/"; // Replace with your official website URL
+        window.location.href =
+          "https://erc-remys-projects-e871eb29.vercel.app/";
         return;
       }
-  
-      const response = await fetch("https://wizzy-africa-backend.onrender.com/api/auth/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-  
+
+      const response = await fetch(
+        "https://wizzy-africa-backend.onrender.com/api/auth/logout",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Logout failed");
       }
-  
+
       localStorage.removeItem("token");
       localStorage.clear();
       Cookies.remove("token");
-  
+
       toast.success("Logged out successfully");
       window.location.href = "https://erc-remys-projects-e871eb29.vercel.app/";
-  
     } catch (error) {
       console.error("Logout error:", error);
       toast.error(error instanceof Error ? error.message : "Error logging out");
