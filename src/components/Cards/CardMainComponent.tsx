@@ -12,6 +12,7 @@ interface Card {
   content: string;
   image: string;
   createdAt: string;
+  link: string;
 }
 
 interface SelectedCard {
@@ -44,8 +45,10 @@ const CardMainComponent: React.FC = () => {
       const response = await fetch(
         "https://wizzy-africa-backend.onrender.com/api/publication-cards",
         {
+          method: "GET",
+          credentials: "include",
           headers: {
-            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
             "Content-Type": "application/json",
           },
         }
@@ -205,14 +208,14 @@ const CardMainComponent: React.FC = () => {
               <div className="flex flex-wrap gap-2 items-center mt-4">
                 <button
                   onClick={() => handleReadMore(card)}
-                  className="flex-1 sm:flex-none items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300"
+                  className="flex-1 sm:flex-none items-center justify-center px-4 py-2 bg-[#043873] text-white rounded-md hover:bg-blue-600 transition-colors duration-300"
                 >
                   Read More
                 </button>
                 <button
                   onClick={() => handleDelete(card._id)}
                   type="button"
-                  className="flex-1 sm:flex-none items-center justify-center text-white bg-red-700 hover:bg-red-800 transition-colors duration-300 rounded-lg px-4 py-2"
+                  className="flex-1 sm:flex-none items-center justify-center text-white bg-red-700 hover:bg-red-800 transition-colors duration-300 rounded-lg px-2 py-2"
                 >
                   <MdDeleteForever size="20px" className="inline mr-1" />
                   Delete
@@ -262,6 +265,7 @@ const CardMainComponent: React.FC = () => {
               className="prose max-w-none prose-sm sm:prose-base"
               dangerouslySetInnerHTML={{ __html: selectedCard.card.content }}
             />
+            <a href={selectedCard.card.link} target="_blank" rel="noopener noreferrer" className="text-[#043873] hover:text-blue-700 cursor-pointer pt-16">Visit the publication</a>
           </div>
         </div>
       </div>

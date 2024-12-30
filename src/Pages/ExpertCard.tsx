@@ -30,7 +30,10 @@ function ExpertCard() {
     const fetchCards = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get("/expertise-cards");
+        const response = await axiosInstance.get("/expertise-cards", {
+          method: "GET",
+          withCredentials: true,
+        });
         setCards(response.data);
       } catch (error: unknown) {
         console.error(error);

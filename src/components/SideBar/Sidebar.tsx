@@ -18,35 +18,35 @@ const Sidebar = () => {
 
       <ul className="space-y-6 pl-4 text-left">
       <div>
-        <h1 className="text-darkBlue text-left pb-4 font-semibold">MENU</h1>
+        <h1 className="text-[#043873] text-left pb-4 font-semibold">MENU</h1>
       </div>
-        <li className="text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+      <li className="text-[#043873] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={Chart} alt="" /> Dashboard
         </li>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={articles} alt="" />
           Articles
         </li>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={Add} alt="" />
           New Article
         </li>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={Document} alt="" />
           Queries
         </li>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={chat} alt="" />
           Appointments
         </li>
         <div>
         <h1 className="text-darkBlue text-left pb-2 pt-2 font-semibold">OTHERS</h1>
       </div>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={Setting} alt="" />
           Settings
         </li>
-        <li className="text-blue-800 hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
+        <li className="text-[#043873] hover:text-[#5A6ACF] font-medium flex gap-2 hover:bg-[#e4e7f6] hover:rounded-lg p-2 cursor-pointer">
           <img src={Profile} alt="" />
           Accounts
         </li>

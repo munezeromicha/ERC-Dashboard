@@ -16,12 +16,14 @@ const PublicationCard = () => {
   const [title, setTitle] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [content, setContent] = useState("");
+  const [referenceLink, setReferenceLink] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (cardData) {
       setTitle(cardData.title);
       setContent(cardData.content);
+      setReferenceLink(cardData.referenceLink);
       if (cardData.image) {
         setImage(cardData.image);
       }
@@ -53,6 +55,7 @@ const PublicationCard = () => {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("content", content);
+      formData.append("link", referenceLink);
 
       if (image instanceof File) {
         formData.append("image", image);
@@ -204,6 +207,8 @@ const PublicationCard = () => {
               <input
                 type="url"
                 id="reference-link"
+                value={referenceLink}
+                onChange={(e) => setReferenceLink(e.target.value)}
                 placeholder="https://example.com"
                 className="w-full p-2 sm:p-3 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               />

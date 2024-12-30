@@ -48,7 +48,7 @@ const DashboardContent = () => {
     console.log("Handling unauthorized access");
     import("js-cookie").then((Cookies) => {
       Cookies.default.remove("auth_token", { path: "/" });
-      window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
+      window.location.replace("http://localhost:5173/login");
       toast.error("Session expired. Please login again.");
     });
   };

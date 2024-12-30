@@ -3,40 +3,35 @@ import Layout from "./Layout";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { toast } from "react-hot-toast";
+import avatar from "../assets/images/avatar.png";
 
 interface UserData {
   fullName: string;
   email: string;
   role: string;
-  company: string;
-  phone: string;
-  location: string;
-  linkedin: string;
-  twitter: string;
+  phoneNumber: string;
   profileImage: string;
+  lastLogin: string;
+  isActive: boolean;
 }
 
 function Settings() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("personal");
   const [userData, setUserData] = useState<UserData>({
     fullName: "",
     email: "",
     role: "",
-    company: "",
-    phone: "",
-    location: "",
-    linkedin: "",
-    twitter: "",
+    phoneNumber: "",
     profileImage: "",
+    lastLogin: "",
+    isActive: false,
   });
-  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
-      const token = Cookies.get("token") || localStorage.getItem("token");
+      const token = Cookies.get("user_info");
 
       if (!token) {
         navigate("/login");
@@ -44,23 +39,18 @@ function Settings() {
       }
 
       try {
-        const decodedToken = JSON.parse(atob(token.split(".")[1]));
-        console.log("Decoded token:", decodedToken);
-
-        const user = decodedToken.user || {};
+        const decodedData = JSON.parse(decodeURIComponent(token));
         setUserData({
-          fullName: user.fullName || "",
-          email: user.email || "",
-          role: user.role || "",
-          company: user.company || "",
-          phone: user.phone || "",
-          location: user.location || "",
-          linkedin: user.linkedin || "",
-          twitter: user.twitter || "",
-          profileImage: user.profileImage || "",
+          fullName: `${decodedData.firstName} ${decodedData.lastName}`,
+          email: decodedData.email,
+          role: decodedData.role,
+          phoneNumber: decodedData.phoneNumber,
+          profileImage: decodedData.profileImage,
+          lastLogin: new Date(decodedData.lastLogin).toLocaleDateString(),
+          isActive: decodedData.isActive
         });
       } catch (error) {
-        console.error("Error decoding token:", error);
+        console.error("Error parsing user data:", error);
         toast.error("Failed to load user data");
       } finally {
         setIsLoading(false);
@@ -70,228 +60,107 @@ function Settings() {
     fetchUserData();
   }, [navigate]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      toast.success("Profile updated successfully");
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Error updating profile:", err);
-      toast.error("Failed to update profile");
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  const SkeletonLoader = () => (
+    <div className="animate-pulse">
+      <div className="flex items-start space-x-6 mb-6">
+        <div className="w-24 h-24 rounded-full bg-gray-200"></div>
+        <div className="space-y-3">
+          <div className="h-8 w-48 bg-gray-200 rounded"></div>
+          <div className="h-6 w-24 bg-gray-200 rounded-full"></div>
+        </div>
       </div>
-    );
-  }
+
+      <div className="grid grid-cols-2 gap-6 mt-8">
+        <div className="space-y-6">
+          <div>
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div className="h-5 w-48 bg-gray-200 rounded"></div>
+          </div>
+          <div>
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div className="h-5 w-48 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div className="h-5 w-48 bg-gray-200 rounded"></div>
+          </div>
+          <div>
+            <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+            <div className="h-5 w-48 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const UserProfile = () => (
+    <>
+      <div className="flex items-start space-x-6 mb-6">
+        <img
+          src={avatar}
+          alt="Profile"
+          className="w-24 h-24 rounded-full border-4 border-blue-50 object-cover"
+        />
+        <div>
+          <h2 className="text-2xl font-semibold text-gray-800">{userData.fullName}</h2>
+          <div className="flex gap-2 mt-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              {userData.role}
+            </span>
+            {userData.isActive && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                Active
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6 mt-8">
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              Email Address
+            </label>
+            <p className="text-gray-800">{userData.email}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              Phone Number
+            </label>
+            <p className="text-gray-800">{userData.phoneNumber}</p>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              Role
+            </label>
+            <p className="text-gray-800 capitalize">{userData.role}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-500 mb-1">
+              Last Login
+            </label>
+            <p className="text-gray-800">{userData.lastLogin}</p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <div className="flex">
       <Layout />
-      <div className="flex">
+      <div className="flex-1 p-8 bg-gray-50">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+          <h1 className="text-3xl font-bold mb-8">Account Information</h1>
 
           <div className="bg-white rounded-xl shadow-sm">
-            <div className="border-b px-6 py-4">
-              <div className="flex space-x-6">
-                {["personal", "security", "notifications"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-4 py-2 font-medium rounded-lg transition-colors
-                      ${
-                        activeTab === tab
-                          ? "bg-blue-50 text-blue-600"
-                          : "text-gray-600 hover:bg-gray-50"
-                      }`}
-                  >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <div className="p-6">
-              {activeTab === "personal" && (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">
-                      Personal Information
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(!isEditing)}
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      {isEditing ? "Cancel" : "Edit"}
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          name="fullName"
-                          value={userData.fullName}
-                          onChange={handleInputChange}
-                          aria-label="Full Name"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={userData.email}
-                          onChange={handleInputChange}
-                          aria-label="Email"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Role
-                        </label>
-                        <input
-                          type="text"
-                          name="role"
-                          value={userData.role}
-                          onChange={handleInputChange}
-                          aria-label="Role"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Company
-                        </label>
-                        <input
-                          type="text"
-                          name="company"
-                          value={userData.company}
-                          onChange={handleInputChange}
-                          aria-label="Company"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Phone
-                        </label>
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={userData.phone}
-                          onChange={handleInputChange}
-                          aria-label="Phone"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Location
-                        </label>
-                        <input
-                          type="text"
-                          name="location"
-                          value={userData.location}
-                          onChange={handleInputChange}
-                          aria-label="Location"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          LinkedIn
-                        </label>
-                        <input
-                          type="text"
-                          name="linkedin"
-                          value={userData.linkedin}
-                          onChange={handleInputChange}
-                          aria-label="LinkedIn"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Twitter
-                        </label>
-                        <input
-                          type="text"
-                          name="twitter"
-                          value={userData.twitter}
-                          onChange={handleInputChange}
-                          aria-label="Twitter"
-                          disabled={!isEditing}
-                          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {isEditing && (
-                    <div className="flex justify-end mt-6">
-                      <button
-                        type="submit"
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Save Changes
-                      </button>
-                    </div>
-                  )}
-                </form>
-              )}
-
-              {activeTab === "security" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Security Settings</h2>
-                </div>
-              )}
-
-              {activeTab === "notifications" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">
-                    Notification Preferences
-                  </h2>
-                </div>
-              )}
+              {isLoading ? <SkeletonLoader /> : <UserProfile />}
             </div>
           </div>
         </div>

@@ -84,7 +84,7 @@ function NewCard() {
         toast.success("Card updated successfully!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/expertise-cards",
+          "https://wizzy-africa-backend.onrender.com/api/expertise-cards",
           {
             title: title.trim(),
             content: content.trim(),

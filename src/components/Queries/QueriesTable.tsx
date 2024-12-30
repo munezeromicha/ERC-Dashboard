@@ -99,7 +99,7 @@ const AppointmentsTable = () => {
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <ToastContainer />
       <div className="mb-6">
-        <h4 className="text-xl sm:text-2xl font-semibold text-gray-900">
+        <h4 className="text-xl sm:text-2xl font-semibold text-gray-900 mt-10">
           Messages
         </h4>
       </div>
@@ -138,7 +138,7 @@ const AppointmentsTable = () => {
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 mt-10">
             {queries.map((query) => (
               <div
                 key={query._id}
