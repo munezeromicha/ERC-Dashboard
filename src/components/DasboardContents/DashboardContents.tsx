@@ -19,7 +19,6 @@ const DashboardContent = () => {
   const token = useMemo(() => getAuthToken(), []);
 
   const axiosInstance = useMemo(() => {
-    console.log("Creating axios instance with token:", token);
     return axios.create({
       baseURL: "https://wizzy-africa-backend.onrender.com/api",
       headers: {
@@ -45,20 +44,16 @@ const DashboardContent = () => {
   );
 
   const handleUnauthorized = () => {
-    console.log("Handling unauthorized access");
     import("js-cookie").then((Cookies) => {
       Cookies.default.remove("auth_token", { path: "/" });
-      window.location.replace("http://localhost:5173/login");
+      window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
       toast.error("Session expired. Please login again.");
     });
   };
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log("Starting data fetch with token:", token);
-
       if (!token) {
-        console.log("No token found in fetchData");
         handleUnauthorized();
         return;
       }

@@ -9,7 +9,7 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     const token = getAuthToken();
     
     if (!token) {
-      window.location.replace("http://localhost:5173/login");
+      window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
     }
   }, [navigate]);
   return isAuthenticated() ? children : null;

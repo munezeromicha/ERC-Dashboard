@@ -61,7 +61,6 @@ const PublicationCard = () => {
         formData.append("image", image);
       }
 
-      console.log("FormData contents:");
       for (const pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
