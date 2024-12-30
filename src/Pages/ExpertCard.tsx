@@ -42,7 +42,7 @@ function ExpertCard() {
           window.location.replace("https://erc-remys-projects-e871eb29.vercel.app/login");
           toast.error("Session expired. Please login again.");
         } else {
-          toast.error("Failed to fetch cards");
+          toast.error("Failed to fetch cards data");
         }
       } finally {
         setLoading(false);
